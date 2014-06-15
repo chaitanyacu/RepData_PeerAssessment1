@@ -1,0 +1,100 @@
+# Reproducible Research Peer Assginment 1
+========================================================
+
+## Loading Foot Step Activity Data
+
+```{r}
+activityDF<-read.csv("activity.csv")
+summary(activityDF)
+```
+##
+Compute steps per day
+```{r}
+totalstepsperdayDF<-aggregate(activityDF$steps ~ activityDF$date, data = activityDF, sum,na.rm = TRUE)
+```
+
+
+## Histogram
+```{r}
+hist(totalstepsperdayDF[,2],xlab='Total Steps per day',ylab='Number of days',main="Histogram of number of steps each day")
+
+```
+
+## Mean and Median total number of steps taken per day
+```{r,echo=FALSE}
+mean_totalstepsperdayDF<-as.numeric(mean(totalstepsperdayDF[,2]))
+median_totalstepsperdayDF<-median(totalstepsperdayDF[,2])
+```
+Mean = `r mean_totalstepsperdayDF`
+Median = `r median_totalstepsperdayDF`
+
+
+## Average daily activity pattern
+```{r}
+averagestepsperintervalDF<-aggregate(activityDF$steps ~ activityDF$interval, data = activityDF, mean,na.rm = TRUE)
+plot( averagestepsperintervalDF[,1], averagestepsperintervalDF[,2],ylim=c(0,500),ylab="Average Steps", xlab="Intervals" ,type="l") 
+```
+
+```{r,echo=FALSE}
+intervalwithmaxsteps<-averagestepsperintervalDF[which.max(averagestepsperintervalDF[,2]),][1]
+
+```
+
+Interval with Max Average steps = `r intervalwithmaxsteps`
+
+
+## Imputing missing values
+
+```{r,echo=FALSE}
+activityNADF<-subset(activityDF,is.na(activityDF$steps))
+noofrowswithNAs<-nrow(activityNADF)
+```
+
+Total number of missing values in the dataset = `r noofrowswithNAs`
+
+
+## Filling in all of the missing values in the dataset with mean interval steps
+
+```{r}
+colnames(averagestepsperintervalDF)[1] <- "interval"
+colnames(averagestepsperintervalDF)[2] <- "avg_steps"
+
+for(i in 1:nrow(activityDF)) {
+  
+    if(is.na(activityDF[i,]$steps)){
+      
+      activityDF[i,]$steps<-averagestepsperintervalDF[averagestepsperintervalDF$interval==activityDF[i,]$interval,2]
+     
+    }
+}
+
+```
+
+### Histogram after refilling NA's
+
+
+Compute steps per day
+```{r}
+totalstepsperdayDF<-aggregate(activityDF$steps ~ activityDF$date, data = activityDF, sum,na.rm = TRUE)
+```
+
+New Historgram after refilling NA's
+
+```{r}
+hist(totalstepsperdayDF[,2],xlab='Total Steps per day',ylab='Number of days',main="Histogram of number of steps each day")
+
+```
+
+
+New Mean and Median total number of steps taken per day after refilling NA's
+
+```{r,echo=FALSE}
+mean_totalstepsperdayDF<-as.numeric(mean(totalstepsperdayDF[,2]))
+median_totalstepsperdayDF<-median(totalstepsperdayDF[,2])
+```
+Mean = `r mean_totalstepsperdayDF`
+Median = `r median_totalstepsperdayDF`
+
+
+## differences in activity patterns between weekdays and weekends
+
